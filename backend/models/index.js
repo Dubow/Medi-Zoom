@@ -16,6 +16,8 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
+// Debugging to see what files are being loaded
+console.log('Loading models...');
 fs
   .readdirSync(__dirname)
   .filter(file => {
@@ -27,8 +29,13 @@ fs
     );
   })
   .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
+    try {
+      const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+      db[model.name] = model;
+      console.log(`Loaded model: ${model.name}`);
+    } catch (err) {
+      console.error(`Error loading model from file: ${file}`, err);
+    }
   });
 
 Object.keys(db).forEach(modelName => {
